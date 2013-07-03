@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<html>
+ <head>
+  <title>aartifact web environment</title>
+  <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+  <!--<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.0/jquery.min.js"></script>-->
+  <script type="text/javascript" src="external/head.load.min.js"></script>
+  <script type="text/javascript" src="external/jquery.1.7.0.min.js"></script>
+  <script type="text/javascript" src="utilities/Include.js"></script>
+  <script type="text/javascript" src="external/uxadt.js"></script>
+  <script type="text/javascript" src="external/Informl.js"></script>
+  <script type="text/javascript" src="external/Imparse.js"></script>
+  <script>
+    function ge(id) { return document.getElementById(id); }
+
+
+    $('#messages').html('<b>Loading scripts...</b>');
+
+    $(document).ready(function(){
+      //$('#body').load('interface.html', function(){
+        $('#messages').html('<b>Loading scripts...</b>');
+        $('#overlay').show();
+
+        Include.includes(
+          'utilities/String.js',
+          'utilities/UUID.js',
+          'utilities/Array.js',
+          'utilities/Map.js',
+          'utilities/Math.js',
+          'utilities/Context.js',
+          'utilities/Enumeration.js',
+          'utilities/Environment.js',
+          'utilities/EquivalenceClasses.js',
+          'utilities/Error.js',
+          'utilities/JSCC.js',
+          'utilities/StaggeredIterator.js',
+          'utilities/Sylvester.js',
+
+          'interface/WidgetFilterableListTable.js',
+          'interface/WidgetPanel.js',
+          'interface/WidgetPanelList.js',
+          'interface/WidgetPanelsTabbed.js',
+          'interface/WidgetPanelsTabbedCollapsible.js',
+          'interface/WidgetTextAreaResizable.js',
+          'interface/WidgetTextFilter.js',
+
+          'aartifact.js',
+          'regimes/example/regime.js'
+        );
+      //});
+    });
+  </script>
+
+  <link rel="stylesheet" type="text/css" href="interface/WidgetFilterableListTable.css" >
+  <link rel="stylesheet" type="text/css" href="interface/WidgetPanelsTabbedCollapsible.css" >
+
+  <link rel="stylesheet" type="text/css" href="interface.css" >
+  <link rel="stylesheet" type="text/css" href="math.css" >
+
+ </head>
+ <body id="body">
+<div id="container">
+
+  <!-- overlay box -->
+  <div id="overlay" 
+       style="display:none; position:absolute; width:100%; height:100%; text-align:center; background-color:#FFFFFF; border:0px solid #FFFFFF;">
+    <div id="messages" style="position:relative; top:40%;"></div>
+  </div>
+  <!-- /overlay box -->
+
+ <div id="bartop">
+  <div style="float:left; margin-left:10px; margin-top:9px;"><b>aartifact web environment</b></div>
+  <div style="float:right; margin-right:10px; margin-top:9px;">
+      <a href="https://www.google.com/chrome">latest version of Google Chrome</a>
+    | <a href="http://www.mozilla.org/firefox/fx/">latest version of Mozilla Firefox</a>
+    | <a href="interface.html">refresh</a>
+    | <a href="http://www.aartifact.org/">about</a>
+  </div>
+ </div>
+ 
+ <!-- wrapper to hide interface on IE -->
+ <!--[if IE]>
+   <div style="width:100%; margin:30px; padding:20px; text-align:center; background-color:#F2D5D5; border:2px solid firebrick;">
+   This tool is currently incompatible with Internet Explorer.
+   Please download the latest version of 
+     <a href="http://www.mozilla.org/firefox/fx/">Mozilla Firefox</a> 
+     or <a href="http://www.google.com/chrome">Google Chrome</a>.
+   </div>
+   <div style="display:none;">
+ <![endif]-->
+ 
+ <table id="panels">
+  <tr>
+   <td style="width:50%; vertical-align:top; text-align:right;"></td>
+   <td style="width:50%; vertical-align:top;"></td>
+  </tr>
+  <tr>
+   <td style="width:50%; vertical-align:top; text-align:right;">
+    <div style="display:inline; float:right; margin-top:9px; margin-bottom:-30px; padding-bottom:2px; 
+                font-size:12px; font-family:Verdana,Arial,sans-serif">
+    <!--update breakdown automatically <input type="checkbox" id="automatic"/> -->
+    </div>
+    <div id="panel_in" style="margin-top:33px;">
+     <div style="height:100%; width:100%;">
+      <div id="input_widget_container">
+      <textarea id="input_text" rows="20"
+        onkeydown="$('#input_text').data('WidgetTextAreaResizable').fit();"
+        onkeypress="$('#input_text').data('WidgetTextAreaResizable').fit();"
+        onkeyup="$('#input_text').data('WidgetTextAreaResizable').fit();"
+        onclick="$('#input_text').data('WidgetTextAreaResizable').fit();"
+        onblur="$('#input_text').data('WidgetTextAreaResizable').fit();"
+        onfocus="$('#input_text').data('WidgetTextAreaResizable').fit();"
+      ></textarea>
+      </div>
+     </div>
+    </div> <!--/panel_in -->
+    <img style="height:10px; width:100%;" src="images/shadow_btm.png"/>
+    <!-- acknowledgements -->
+    <div style="text-align:left; float:left; color:#BBBBBB; font-size:10px; font-family:Tahoma,Arial,Sans-serif; margin:5px;">
+     This software is built and maintained with support from  
+     NSF Grants No.<br/> 0820138 and No. 0720604 and the Hariri Institute at Boston University.
+    </div>
+    <!-- /acknowledgements -->
+   </td>
+   <td style="width:50%; vertical-align:top;">
+    <div id="panels_tabbed"></div>
+    <img style="height:10px; width:100%;" src="images/shadow_btm.png"/>
+    <!--<div style="display:block; background-image:url('images/shadow_btm.png'); height:10px;"></div>-->
+   </td>
+  </tr>
+  <tr><td></td><td></td></tr>
+ </table>
+  
+ <!--[if IE]>
+   </div> 
+ <![endif]-->
+ <!-- /wrapper to hide interface on IE -->
+  
+</div> 
+<!--eof-->
+
+ </body>
+</html>

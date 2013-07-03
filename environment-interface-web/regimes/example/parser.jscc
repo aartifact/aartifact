@@ -1,0 +1,487 @@
+[*///////////////////////////////////////////////////////////////////
+//
+// aartifact
+// http://www.aartifact.org/
+//
+// This software is made available under the GNU GPLv3.
+//
+// regimes/undergrad_instruction_linear_algebra/parser.jscc
+//   Input grammar definition; to be used with JS/CC to
+//   generate parser.
+//
+
+E = aartifact.expression.constructors;
+
+function parseBits(s) {
+  for (var i = 0; i < s.length; i++)
+    if (s.substr(i,1) != '1' && s.substr(i,1) != '0')
+      return '0';
+  return s;
+}
+
+function nonull(e) {
+  if (e == null)
+    return null;
+
+  if (e.dat == null)
+    return null;
+    
+  if (e.dat.length != null)
+    for (var i = 0; i < e.dat.length; i++)
+      if (e.dat[i] == null)
+        return null;
+
+  return e;
+}
+
+function list_add (l,e) {
+  var l_new = [];
+  for (var i = 0; i < l.length; i++)
+    l_new.push(l[i]);
+  l_new.push(e); 
+  return l_new;
+}
+
+function wrapper_or_comprehension(t1, tcs, TypeOfWrapper, TypeOfComprehension) {
+  return (tcs == null) ? TypeOfWrapper(t1) : TypeOfComprehension(t1, tcs.term);
+}
+
+function make_text_op_term(components) {
+  var t = {text:'', terms:[], dat:[]};
+  var text_parts = [];
+  for (var i = 0; i < components.length; i++) {
+    if (components[i].con == 'Word') {
+      text_parts.push(components[i].dat);
+    } else if (components[i].con == 'Term') {
+      text_parts.push('*');
+      t.terms.push(components[i].dat);
+    }
+  }
+  t.text = text_parts.join(' ');
+  t.dat = t.terms;
+  return new Exp('TextOp', t.text, t.terms);
+}
+
+function mkQuant(op, binding, t) {
+  if (binding.vars.length == 0) return null;
+  for (var i = 0; i < binding.vars.length; i++) {
+    if (binding.relOp != null && binding.domain != null)
+      t = E.Quantifier(op, binding.relOp(E.V(binding.vars[i]),binding.domain), t);
+    else
+      t = E.Quantifier(op, E.V(binding.vars[i]), t);
+  }
+  return t;
+}
+
+function mkVar(s) {
+  for (var i = 0; i < s.length; i++) {
+    var c = s.substr(i,i+1);
+    if ( c != '0' && c!='1' && c!='2' && c!='3' && c!='4' && c!='5' && c!='6' && c!='7' && c!='8' && c!='9' && c!='.' && c!='-' )
+      break;
+  }
+  if (i == 0)
+    return E.V(s);
+  else {
+    var n = parseFloat(s.substr(0,i));
+    return (!isNaN(n)) ? E.Apply(E.Num(n), E.V(s.substr(i))) : null;
+  }
+}
+
+///////////////////////////////////////////////////////////////////
+// Parser definition starts here; to be replaced by auto-generated
+// JSCC code.
+*]
+
+/~ token definitions ~/
+
+/~ characters to be ignored ~/
+!   ' |\r|\n|\t' ;
+
+/~ non-associative tokens ~/
+  'send'
+  'receive'
+  'skip'
+  'if'
+
+  '```'
+  '``'
+  '`'
+  '\\prop'
+  '\''
+  '\.'
+  '@'
+  ';'
+  '$'
+  '\\true'
+  '\\false'
+  '\\not'
+  '\\exists'
+  '\\forall'
+  '\\indeterminate'
+  '\\undefined'
+  '\\emptyset'
+  '\\Bits'
+  '\\R'
+  '\\rank'
+  '\\rk'
+  '\\trace'
+  '\\tr'
+  '\\transpose'
+  '\\matrix'
+  '\\augment'
+  '\\decompose'
+  '\\orthonormal'
+  '\\t'
+  '\\top'
+  '\\bot'
+  '\\det'
+  '\\rref'
+  '\\span'
+  '\\dim'
+  '\\basis'
+  '\\ker'
+  '\\img'
+  '\\im'
+  '\\sqrt'
+  '\\powerset'
+  '\\infty'
+  '\\max'
+  '\\min'
+  '\\dom'
+  '\\ran'
+  '\['
+  '\]'
+  '\('
+  '\)'
+  '\\{'
+  '\\}'
+  '{'
+  '}'
+  '~\('
+  '\)~'
+  '\|'
+  '\|\|'
+  '\\lfloor'
+  '\\rfloor'
+  '\\lceil'
+  '\\rceil'
+  '\\bits{'
+  '\\prod_{'
+  '\\sum_{'
+  '\\argmax_{'
+  '\\argmin_{'
+  '^'
+  '_'
+  '[0-9]*[A-Za-z_]((\')|[A-Za-z0-9_])*' Word
+  '[0-9]+'                              INT   [* %match = %match; *] /~ parse into bits/integer as needed ~/
+  '[0-9]+\.[0-9]*|[0-9]*\.[0-9]+'       FLOAT [* %match = parseFloat( %match ); *]
+  '[A-Za-z_][A-Za-z0-9_]*'              Identifier
+  '[A-Za-z0-9]+'                        UUID
+  ;
+
+/~ left-associative tokens, lowest precedence, used for prefix rules (e.g. "forall") ~/
+< '```'
+  ; 
+
+/~ logical implication operators ~/
+> '\\implies'
+  '\\iff'
+  ; 
+
+/~ logical operators ~/
+> '\\and' 
+  '\\or'
+  ; 
+
+/~ separators ~/
+< ';'
+  ; 
+
+/~ set, vector, and tuple separators ~/
+< ',' 
+  '\.\.\.'
+  ; 
+
+/~ finite map definition separators ~/
+< '\\mapsto'
+  ':'
+  ':>'
+  ':->'
+  ;
+
+/~ relations ~/
+< '::='
+  ':='
+  '\\simeq'
+  '\\sim'
+  '~'
+  '\\approx'
+  '\\equiv'
+  '='
+  '\\neq'
+  '<'
+  '>'
+  '\\leq'
+  '\\geq'
+  '\\in'
+  '\\subset'
+  '\\subseteq'
+  ;
+
+/~ operators on sets ~/
+< 
+  '\\cup'
+  '\\cap'
+  '\\times'
+  '\\to'
+  '->'
+  ;
+
+/~ operators on functions ~/
+<
+  '\\circ'
+  ;
+
+/~ arithmetic (binary, string, numbers, etc.) operators ~/
+< 
+  '\+'
+  '-'
+  ;
+
+<
+  '\\oplus'
+  ;
+
+<
+  '\*'
+  '\\mod'
+  '/'
+  ;
+
+<
+  '\\otimes'
+  ;
+
+<
+  '\\concat'
+  ;
+  
+<
+  '\\vee'
+  ;
+
+<
+  '\\wedge'
+  ;
+
+/~ sub- and superscript operators ~/
+<
+  '^'
+  '_'
+  ;
+
+##
+
+/~ grammar specification ~/
+
+p:      
+    Stmt_List       [* __RESULT__ = %1; *]
+  ;
+
+Stmt_List: 
+    Stmt_List Stmt  [* %% = (%2.con == 'Nothing' ? %1 : list_add(%1,%2)); *]
+  | Stmt            [* %% = [%1]; *]
+  ;
+
+Stmt:
+    '@' Formula [* %% = nonull({typ:'Stmt', con:'Stmt', dat:%2}); *]
+  ;
+
+Formula:
+   '\\prop' Expr             [* %% = nonull({typ:'Formula', con:'Expr', dat:%2, prop:true}); *]
+  | Expr                     [* %% = nonull({typ:'Formula', con:'Expr', dat:%1}); *]
+  /~ | '\'' Pred_Comp_List '\'' [* %% = {typ:'Formula', con:'Predicate', dat:%3}; *] ~/
+  ;
+
+Word_List_Comma_Sep: 
+    Word_List_Comma_Sep ',' Word  [* %% = list_add(%1,%3); *]
+  | Word                          [* %% = [%1]; *]
+  ;
+
+Pred_Comp_List:
+    Pred_Comp_List Pred_Comp  [* %% = list_add(%1,%2); *]
+  | Pred_Comp                 [* %% = [%1]; *]
+  ;
+
+Pred_Comp:
+    '\(' Term '\)'  [* %% = {typ:'Pred_Comp', con:'Term', dat:%2}; *]
+  | '$' Term '$'  [* %% = {typ:'Pred_Comp', con:'Term', dat:%2}; *]
+  | Word          [* %% = {typ:'Pred_Comp', con:'Word', dat:%1}; *]
+  | '-'           [* %% = {typ:'Pred_Comp', con:'Word', dat:'-'}; *]
+  ;
+
+Expr:
+    Term StmtRelation Term [* %% = {typ:'Expr', con:'Relation', dat:[%1,%3], relation:%2}; *]
+  | Term [* %% = %1; *]
+  ;
+
+StmtRelation:
+    ':='    [* %% = 'Eqdef' *]
+  ;
+
+Term:
+    '\\forall' TermQuantBind TermQuantBindTerminal Term   &'```'   [* %% = mkQuant('Forall', %2, %4); *]
+  | '\\exists' TermQuantBind TermQuantBindTerminal Term   &'```'   [* %% = mkQuant('Exists', %2, %4); *]
+  | Term '\\implies'  Term        [* %% = E.Implies(%1,%3); *]
+  | Term '\\and'      Term        [* %% = E.And(%1,%3); *]
+  | Term '\\or'       Term        [* %% = E.Or(%1,%3); *]
+  | Term '\\iff'      Term        [* %% = E.Iff(%1,%3); *]
+  | Term '\.\.\.'     Term        [* %% = E.Ldots(%1,%3); *]
+  | Term ';'          Term        [* %% = E.Semicolon(%1,%3); *]
+  | Term '\\approx'   Term        [* %% = E.Approx(%1,%3); *]
+  | Term '\\equiv'    Term        [* %% = E.Equiv(%1,%3); *]
+  | Term '\\sim'      Term        [* %% = E.Sim(%1,%3); *]
+  | Term '~'          Term        [* %% = E.Sim(%1,%3); *]
+  | Term '\\simeq'    Term        [* %% = E.Simeq(%1,%3); *]
+  | Term '='          Term        [* %% = E.Eq(%1,%3); *]
+  | Term '\\neq'      Term        [* %% = E.Neq(%1,%3); *]
+  | Term '<'          Term        [* %% = E.Lt(%1,%3); *]
+  | Term '>'          Term        [* %% = E.Gt(%1,%3); *]
+  | Term '\\leq'      Term        [* %% = E.Leq(%1,%3); *]
+  | Term '\\geq'      Term        [* %% = E.Geq(%1,%3); *]
+  | Term '\\in'       Term        [* %% = E.In(%1,%3); *]
+  | Term '\\subset'   Term        [* %% = E.Subset(%1,%3); *]
+  | Term '\\subseteq' Term        [* %% = E.Subseteq(%1,%3); *]
+  | Term ','          Term        [* %% = E.Comma(%1,%3); *]
+  | Term '\\mapsto'   Term        [* %% = E.Mapsto(%1,%3); *]
+  | Term ':>'         Term        [* %% = E.Mapsto(%1,%3); *]
+  | Term ':->'        Term        [* %% = E.Mapsto(%1,%3); *]
+  | Term ':'          Term        [* %% = E.Mapsto(%1,%3); *]
+  | Term '\\cup'      Term        [* %% = E.Union(%1,%3); *]
+  | Term '\\cap'      Term        [* %% = E.Isect(%1,%3); *]
+  | Term '\\times'    Term        [* %% = E.Times(%1,%3); *]
+  | Term '\\to'       Term        [* %% = E.Rightarrow(%1,%3); *]
+  | Term '->'         Term        [* %% = E.Rightarrow(%1,%3); *]
+  | Term '\\oplus'    Term        [* %% = E.Oplus(%1,%3); *]
+  | Term '\\otimes'   Term        [* %% = E.Otimes(%1,%3); *]
+  | Term '\\concat'   Term        [* %% = E.Concat(%1,%3); *]
+  | Term '\\wedge'    Term        [* %% = E.Wedge(%1,%3); *]
+  | Term '\\vee'      Term        [* %% = E.Vee(%1,%3); *]
+  | Term '\+'         Term        [* %% = E.Plus(%1,%3); *]
+  | Term '-'          Term        [* %% = E.Minus(%1,%3); *]
+  | Term '\*'         Term        [* %% = E.Mult(%1,%3); *]
+  | '-' Term                  &'\*' [* %% = E.Neg(%2); *]
+  | '\\matrix'      Term      &'\*' [* %% = E.MatrixMake(%2); *]
+  | '\\augment'     Term      &'\*' [* %% = E.Augment(%2); *]
+  | '\\decompose'   Term      &'\*' [* %% = E.Decompose(%2); *]
+  | '\\orthonormal' Term      &'\*' [* %% = E.Orthonormal(%2); *]
+  | '\\det'         Term      &'\*' [* %% = E.Det(%2); *]
+  | '\\rref'        Term      &'\*' [* %% = E.Rref(%2); *]
+  | '\\rank'        Term      &'\*' [* %% = E.Rank(%2); *]
+  | '\\rk'          Term      &'\*' [* %% = E.Rank(%2); *]
+  | '\\trace'       Term      &'\*' [* %% = E.Trace(%2); *]
+  | '\\tr'          Term      &'\*' [* %% = E.Trace(%2); *]
+  | '\\transpose'   Term      &'\*' [* %% = E.Transpose(%2); *]
+  | '\\span'        Term      &'\*' [* %% = E.Span(%2); *]
+  | '\\dim'         Term      &'\*' [* %% = E.Dim(%2); *]
+  | '\\basis'       Term      &'\*' [* %% = E.Basis(%2); *]
+  | '\\ker'         Term      &'\*' [* %% = E.Ker(%2); *]
+  | '\\img'         Term      &'\*' [* %% = E.Img(%2); *]
+  | '\\im'          Term      &'\*' [* %% = E.Img(%2); *]
+  | '\\sqrt'        Term      &'\*' [* %% = E.Sqrt(%2); *]
+  | '\\bits{' INT '}'       &'\*' [* %% = E.Bits(parseBits(%2)); *]
+  | Term '\\mod'      Term        [* %% = E.Mod(%1,%3); *]
+  | Term '/'          Term        [* %% = E.Div(%1,%3); *]
+  | Term '\\circ'     Term        [* %% = E.Circ(%1,%3); *]
+
+  /~ The following operators have higher precedence than application. ~/
+  | Term '^'          TermAtom    [* %% = (%3.dat[0]=='Top') ? E.Transpose(%1) : E.Super(%1,%3); *]
+  | Term '_'          Term        [* %% = E.Sub(%1,%3); *]
+
+  /~ The following are the base cases. ~/
+  | TermPlaceholder         &'='  [* %% = %1; *]
+  | TermApply                     [* %% = %1; *]
+  ;
+
+TermPlaceholder:
+    '``' '=' Term [* %% = E.Eq(E.Placeholder(),%3); *]
+  ;
+
+TermApply:
+    TermApply TermAtom [* %% = (%1 == null) ? %2 : E.Apply(%1,%2); *]
+  | TermAtom           [* %% = %1; *]
+  | '\|\|' Term '\|\|' [* %% = E.Norm(%2); *]
+  | '\|' Term '\|'     [* %% = E.Bars(%2); *]
+  ;
+
+TermQuantBind:
+     Word_Comma_Sep_List '\\in' Term          [* %% = {vars:%1, domain:%3, relOp: E.In}; *]
+   | Word_Comma_Sep_List '\\subset' Term      [* %% = {vars:%1, domain:%3, relOp: E.Subset}; *]
+   /~ | Word                                    [* %% = {vars:[%1], domain: null, relOp: null}; *] ~/
+  ;
+
+TermQuantBindTerminal:
+    ','
+  | ':'
+  ;
+
+TermAtom:
+    Word                                     [* %% = mkVar(%1); *]
+  | INT                                      [* %% = E.Num(parseInt(%1)); *]
+  | FLOAT                                    [* %% = E.Num(%1); *]
+  | TermConstant                             [* %% = E.Constant(%1); *]
+  | '[' Term ']'                             [* %% = E.Bracks(%2); *]
+  | '\\lfloor' Term '\\rfloor'               [* %% = E.Floor(%2); *]
+  | '\\lceil' Term '\\rceil'                 [* %% = E.Ceiling(%2); *]
+  | '\(' Term TermComprehensionSuffix '\)'   [* %% = wrapper_or_comprehension(%2, %3, E.WrapParens, E.TupleComprehension); *]
+  | '~\(' Term TermComprehensionSuffix '\)~' [* %% = wrapper_or_comprehension(%2, %3, E.Braces, E.SetComprehension); *]
+  | '{' Term TermComprehensionSuffix '}'     [* %% = wrapper_or_comprehension(%2, %3, E.Braces, E.SetComprehension); *]
+  | '\`' Pred_Comp_List '\`'                 [* %% = make_text_op_term(%2); *]
+  /~ | TermOpIter Term '\\in' Term '}' Term     [* %% = {typ:'Term', con:'OpIter', dat: [%2,%4,%6], operator:%1}; *] ~/
+  ;
+
+TermComprehensionSuffix:
+    '\|' Term [* %% = {term: %2}; *]
+  |           [* %% = null; *]
+  ;
+
+TermConstant:
+    '\\true'          [* %% = 'True' *]
+  | '\\false'         [* %% = 'False' *]
+  | '\\not'           [* %% = 'Not' *]
+  | '\\undefined'     [* %% = 'Undefined' *]
+  | '\\indeterminate' [* %% = 'Indeterminate' *]
+  | '\\emptyset'      [* %% = 'Emptyset' *]
+  | '\\R'             [* %% = 'R' *]
+  | '\\Bits'          [* %% = 'BitStrings' *]
+  | '\\powerset'      [* %% = 'Powerset' *]
+  | '\\infty'         [* %% = 'Infinity' *]
+  | '\\max'           [* %% = 'Max' *]
+  | '\\min'           [* %% = 'Min' *]
+  | '\\dom'           [* %% = 'Dom' *]
+  | '\\ran'           [* %% = 'Ran' *]
+  | '\\t'             [* %% = 'Top' *]
+  | '\\top'           [* %% = 'Top' *]
+  | '\\bot'           [* %% = 'Bottom' *]
+  ;
+
+TermOpIter:
+    '\\sum_{'  [* %% = 'Sum' *]
+  | '\\prod_{' [* %% = 'Prod' *]
+  | '\\argmax_{' [* %% = 'Argmax' *]
+  | '\\argmin_{' [* %% = 'Argmin' *]
+  ;
+
+Word_List:
+    Word_List Word  [* %% = list_add(%1,%2); *]
+  | Word            [* %% = [%1]; *]
+  ;
+  
+Word_Comma_Sep_List:
+    Word_Comma_Sep_List ',' Word  [* %% = list_add(%1,%3); *]
+  | Word                          [* %% = [%1]; *]
+  ;
+
+UD: '```' Word '```' [* %% = %2; *] | [* %% = '0'; *] ;
+
+/~eof~/

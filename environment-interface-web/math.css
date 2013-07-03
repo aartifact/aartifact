@@ -1,0 +1,34 @@
+
+.collection_element { 
+  background-color:whitesmoke; 
+  margin-left:2px; margin-right:2px; margin-top:2px; margin-bottom:2px; 
+  padding-left:7px; padding-right:3px;
+}
+
+.vcenter { position:relative; overflow:hidden; display:inline-block; }
+.vtop { position:relative; overflow:hidden; display:inline-block; }
+
+.formula { padding-top:5px; padding-left:8px; padding-right:8px; white-space:nowrap; }
+
+.verifiablytrue { background-color:#CFDEF7; padding-top:5px; padding-left:8px; padding-right:8px; }
+.verifiablyfalse { background-color:#F2D5D5; padding-top:5px; padding-left:8px; padding-right:8px; }
+.unverifiable { background-color:#F7F7B6 /*FFFEE2*/; padding-top:5px; padding-left:8px; padding-right:8px; }
+.contradictory { border:3px solid firebrick; background-color:#CFDEF7 /*FFFEE2*/; padding-top:2px; padding-left:5px; padding-right:5px; }
+.premise { background-color:#BEFFCC /*FFFEE2*/; padding-top:5px; padding-left:8px; padding-right:8px; }
+
+.relation { padding-left:5px; padding-right:5px; }
+.formulaop { color:#9E9E9E; }
+.unbound { color:red; font-weight:bold; }
+
+.collection_delimiter { }
+
+.html_matrix_lft { border-left:1px solid #000000; border-top:1px solid #000000; border-bottom:1px solid #000000; }
+.html_matrix_rgt { border-right:1px solid #000000; border-top:1px solid #000000; border-bottom:1px solid #000000; }
+.html_matrix_entry { text-align:center; padding-left:6px; padding-right:6px; margin:0px; }
+.html_vector_entry { text-align:center; padding-left:2px; padding-right:2px; margin:0px; }
+.html_norm_lft { border-left:1px solid #000000; }
+.html_norm_rgt { border-right:1px solid #000000; }
+
+.error { color:firebrick; font-weight:bold; }
+
+/*eof*/

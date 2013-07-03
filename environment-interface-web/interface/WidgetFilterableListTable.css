@@ -1,0 +1,11 @@
+
+.panel_table_item_0 { background-color:#FFFFFF; padding:4px 8px 4px 8px; }
+.panel_table_item_1 { background-color:#EEEEEE; padding:4px 8px 4px 8px; }
+
+.panel_table_filter_panel {
+  font-family:Verdana,Arial,sans-serif; font-size:10px;
+  border-bottom:1px solid #CCCCCC; background-color:#EAEAEA; width:98%; margin:5px;
+}
+.panel_table_filter_panel_input { padding:5px; margin:0px; width:90%; border:0px solid #FFFFFF; background-color:#EAEAEA; color:#000000; }
+.panel_table_filter_panel_input:hover { padding:5px; margin:0px; width:90%; border:0px solid #FFFFFF; background-color:#EAEAEA; color:#000000; }
+/*eof*/
